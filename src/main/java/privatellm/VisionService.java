@@ -24,35 +24,20 @@ public class VisionService {
 
 	private static final String PROMPT = """
 			Extrahiere den Spielertag aus dem folgenden Clash-Royale-Profil-Screenshot fehlerfrei, auch bei schlechter Bildqualität.
-
+			Falls es nicht auf diesem Bild zu sehen ist, gib mir "NOTAG" zurück
 			Aufgabe:
-
 			Finde im Bild das Textfeld mit dem Spielertag.
-
 			Der Spielertag steht im Profilbereich unter dem Spielernamen und beginnt immer mit # (Beispiel: #2YLJPV0LQ).
-
 			Gib ausschließlich den erkannten Spielertag als Text aus, ohne Zusatz, ohne Erklärung, ohne Anführungszeichen.
-
 			Qualitätsanforderungen:
-
 			Nutze alle verfügbaren Techniken zur Texterkennung (OCR, Vergrößerung, Schärfung, Rauschunterdrückung), um auch bei Unschärfe oder Kompression den Text korrekt zu lesen.
-
 			Wenn einzelne Zeichen unscharf sind, wähle das wahrscheinlichste Zeichen basierend auf:
-
-			dem offiziellen Format von Clash-Royale-Tags (Großbuchstaben A–Z und Ziffern 0–9, beginnend mit #),
-
-			typischen Verwechslungen (z.B. 0 vs. O, 1 vs. I, 8 vs. B) und ihrer Form im Bild.
-
+			dem offiziellen Format von Clash-Royale-Tags (Großbuchstaben A–Z und Ziffern 0–9, beginnend mit #, kein O),
+			typischen Verwechslungen (z.B. 0 vs. Q, 1 vs. I, 8 vs. B, **Y vs. V**) und ihrer Form im Bild.
 			Vergleiche das Ergebnis mit gültigen Tag-Mustern und korrigiere offensichtliche OCR-Fehler.
-
 			Fehlersicherheit:
-
-			Wenn du dir nicht zu mindestens 95 % sicher bist, gib kein Ergebnis aus, sondern genau den Text:
-
-			UNSICHER
-
-			Sobald du einen Tag mit ≥95 % Sicherheit bestimmt hast, gib nur diesen Tag aus.
-			 	""";
+			Es ist unglaublich wichtig, dass dieses Ergebnis richtig ist und es ist nicht wichtig, wie lange du dafür brauchst.
+						""";
 
 	private final String lmStudioEndpoint;
 

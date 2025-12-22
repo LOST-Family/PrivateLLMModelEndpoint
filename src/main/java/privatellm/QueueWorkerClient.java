@@ -174,7 +174,24 @@ public class QueueWorkerClient {
 	 */
 	private void processRequest(QueueRequest request) throws IOException {
 		// Extract player tag using vision service
-		String playerTag = visionService.extractPlayerTag(request.imageUrls);
+		String playerTag = null;
+		List<String> imageUrls = request.imageUrls;
+		int i = 1;
+		for (String url : imageUrls) {
+			String s = visionService.extractPlayerTag(new ArrayList<>() {
+				{
+					add(url);
+				}
+			});
+			if (!s.equals("NOTAG")) {
+				playerTag = s;
+				System.out
+						.println("  - Processed image " + i + "/" + imageUrls.size() + ": Tag " + playerTag + " found");
+				break;
+			}
+			System.out.println("  - Processed image " + i + "/" + imageUrls.size() + ": No tag found");
+			i++;
+		}
 
 		if (playerTag != null && !playerTag.isEmpty()) {
 			System.out.println("  ✓ Extracted player tag: " + playerTag);
