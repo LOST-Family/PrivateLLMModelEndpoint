@@ -10,6 +10,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -24,11 +25,12 @@ public class VisionService {
 
 	private static final String PROMPT = """
 			Extrahiere den Spielertag aus dem folgenden Clash-Royale-Profil-Screenshot fehlerfrei, auch bei schlechter Bildqualität.
-			Falls es nicht auf diesem Bild zu sehen ist, gib mir "NOTAG" zurück
+			Es kann sein, dass der Tag garnicht zu sehen ist. Falls es nicht auf diesem Bild zu sehen ist, gib mir unbedingt "NOTAG" zurück.
+			Dinge wie "Clankriegsveteran" zählen nicht als Tag und sollen somit ignoriert werden.
 			Aufgabe:
 			Finde im Bild das Textfeld mit dem Spielertag.
 			Der Spielertag steht im Profilbereich unter dem Spielernamen und beginnt immer mit # (Beispiel: #2YLJPV0LQ).
-			Gib ausschließlich den erkannten Spielertag als Text aus, ohne Zusatz, ohne Erklärung, ohne Anführungszeichen.
+			Gib ausschließlich den erkannten Spielertag als Text oder "NOTAG" aus, ohne Zusatz, ohne Erklärung, ohne Anführungszeichen.
 			Qualitätsanforderungen:
 			Nutze alle verfügbaren Techniken zur Texterkennung (OCR, Vergrößerung, Schärfung, Rauschunterdrückung), um auch bei Unschärfe oder Kompression den Text korrekt zu lesen.
 			Wenn einzelne Zeichen unscharf sind, wähle das wahrscheinlichste Zeichen basierend auf:
@@ -221,16 +223,27 @@ public class VisionService {
 		}
 
 		// Check if response indicates not found
-		if (response.toUpperCase().contains("NOT_FOUND") || response.toUpperCase().contains("NOT FOUND")) {
-			return null;
+		if (response.toUpperCase().contains("NOTAG")) {
+			return "NOTAG";
 		}
+		Set<Character> allowed = Set.of('0', '2', '8', '9', 'P', 'Y', 'L', 'Q', 'G', 'R', 'J', 'C', 'U', 'V', 'O'); // Beispiel
 
-		// Extract player tag using regex
 		Matcher matcher = PLAYER_TAG_PATTERN.matcher(response);
-		if (matcher.find()) {
-			return matcher.group();
+		if (matcher.find()) { //finde etwas mit #
+			String tag = matcher.group(); //wähle das aus
+			try {
+				Integer.parseInt(tag.replace("#", "")); //versuch das mal zu ner Zahl zu machen
+				return "NOTAG"; //wenns klappt, nicht gut, skip
+			} catch (Exception e) { //wenns nicht klappt, gut
+				boolean onlyAllowed = tag.chars().allMatch(ch -> allowed.contains((char) ch)); //prüfen, ob nur erlaubte Zeichen drin sind
+				boolean hasForbidden = !onlyAllowed; //umdrehen -> prüfen, ob unerlaubte Zeichen drin sind
+				if (hasForbidden) { //sind welche drin?
+					return "NOTAG"; //wenn ja, skip, kein richtiger Tag
+				}
+				return tag; //ansonsten passt, gib den Tag zurück
+			}
 		}
 
-		return null;
+		return "NOTAG";
 	}
 }

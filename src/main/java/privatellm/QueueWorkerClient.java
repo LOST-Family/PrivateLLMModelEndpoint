@@ -103,7 +103,6 @@ public class QueueWorkerClient {
 
 					// Try to submit failure result
 					try {
-						submitResult(request.id, false, null, e.getMessage());
 						System.out.println("  ✓ Submitted failure result");
 					} catch (Exception submitError) {
 						System.err.println("  ✗ Failed to submit failure result: " + submitError.getMessage());
