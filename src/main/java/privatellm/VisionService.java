@@ -240,7 +240,7 @@ public class VisionService {
 				if (hasForbidden) { //sind welche drin?
 					return "NOTAG"; //wenn ja, skip, kein richtiger Tag
 				}
-				return tag; //ansonsten passt, gib den Tag zurück
+				return tag.replaceAll("O", "0"); //ansonsten passt, gib den Tag zurück
 			}
 		}
 
